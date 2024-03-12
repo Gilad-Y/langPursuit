@@ -4,7 +4,11 @@ interface props {
   data?: any;
 }
 function AddWordForm(props: props): JSX.Element {
-  return <div className="addWordForm"></div>;
+  return (
+    <div className="addWordForm">
+      <h1>add manualy </h1>
+    </div>
+  );
 }
 
 export default AddWordForm;

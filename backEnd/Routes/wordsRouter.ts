@@ -29,6 +29,15 @@ router.get(
     response.status(200).json(await wordsLogic.getMyWords(id));
   }
 );
+router.post(
+  "/uploadWords/:id/:lang",
+  async (request: Request, response: Response, next: NextFunction) => {
+    const id = +request.params.id;
+    const lang = request.params.lang;
+    const words = request.body;
+    response.status(200).json(await wordsLogic.uploadWords(id, words, lang));
+  }
+);
 // router.get(
 //   "/checkPhoneNumber",
 //   async (request: Request, response: Response, next: NextFunction) => {
