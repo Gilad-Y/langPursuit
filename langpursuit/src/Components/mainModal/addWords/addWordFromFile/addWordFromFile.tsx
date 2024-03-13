@@ -9,7 +9,7 @@ import store from "../../../../redux/store";
 
 interface Props {
   onClose: () => void;
-  data?: any;
+  data: any;
 }
 
 const VisuallyHiddenInput = styled("input")({
@@ -69,18 +69,21 @@ function AddWordFromFile(props: Props): JSX.Element {
       )
       .then((res: any) => {
         const myWords = res.data;
-        console.log(myWords);
+        // console.log(myWords);
         // Check if any word from wordsFile already exists in myWords
         const nonExistingWords = wordsFile?.filter((wordFromFile: any) => {
-          return myWords.some((word: any) => word.word !== wordFromFile.word);
+          return myWords.some(
+            (word: any) => word.word !== wordFromFile.word
+            // console.log(detectLanguage())
+          );
         });
 
         // Log the existing words found
-        console.log("added:", nonExistingWords?.length);
+        // console.log("added:", nonExistingWords?.length);
         axios.post(
           `http://localhost:4000/api/v1/words/uploadWords/${
             store.getState().users.user[0].id
-          }/JP`,
+          }/${props.data}`,
           nonExistingWords
         );
       });

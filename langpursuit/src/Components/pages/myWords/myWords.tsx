@@ -1,158 +1,151 @@
-import { useEffect, useState } from "react";
 import "./myWords.css";
+import * as React from "react";
+import Tabs from "@mui/joy/Tabs";
+import TabList from "@mui/joy/TabList";
+import Tab, { tabClasses } from "@mui/joy/Tab";
+import TabPanel from "@mui/joy/TabPanel";
+import Typography from "@mui/joy/Typography";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { wordsModel } from "../../../models/wordsModel";
-import { Button } from "@mui/material";
-import MainModal from "../../mainModal/mainModal";
-import { Sheet } from "@mui/joy";
-import Box from "@mui/joy/Box";
-import Table from "@mui/joy/Table";
-import Typography from "@mui/joy/Typography";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel from "@mui/joy/FormLabel";
-import IconButton from "@mui/joy/IconButton";
-import Link from "@mui/joy/Link";
-import Tooltip from "@mui/joy/Tooltip";
-import Select from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import { visuallyHidden } from "@mui/utils";
-import React from "react";
+import LangTablePage from "./langTablePage/langTablePage";
+import cld from "cld";
 function MyWords(): JSX.Element {
   const params = useParams();
-  const [rows, setRows] = useState<wordsModel[]>([]);
-  const [open, setOpen] = useState<boolean>(false);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const toggleModal = () => {
-    setOpen((prev) => !prev);
-  };
-
-  useEffect(() => {
+  const [langs, setLangs] = React.useState<string[]>([]);
+  React.useEffect(() => {
     axios
-      .get(`http://localhost:4000/api/v1/words/getMyWords/${params.id}`)
+      .get(`http://localhost:4000/api/v1/words/getLangListById/${params.id}`)
       .then((res: any) => {
-        setRows(res.data); // Update the state with fetched data
-        console.log(res.data);
+        setLangs(res.data[0].lang.split(","));
       });
   }, []);
-  const handleChangePage = (newPage: number) => {
-    setPage(newPage);
-  };
-  const handleChangeRowsPerPage = (event: any, newValue: number | null) => {
-    setRowsPerPage(parseInt(newValue!.toString(), 10));
-    setPage(0);
-  };
-  function labelDisplayedRows({
-    from,
-    to,
-    count,
-  }: {
-    from: number;
-    to: number;
-    count: number;
-  }): string {
-    return `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`;
-  }
-
-  const getLabelDisplayedRowsTo = () => {
-    if (rows.length === -1) {
-      return (page + 1) * rowsPerPage;
-    }
-    return rowsPerPage === -1
-      ? rows.length
-      : Math.min(rows.length, (page + 1) * rowsPerPage);
-  };
-
   return (
-    <div className="myWords" style={{ overflow: "auto" }}>
-      <Sheet
+    <div className="myWords">
+      <Tabs
         variant="outlined"
-        sx={{ width: "100%", boxShadow: "sm", borderRadius: "sm" }}
-      >
-        <Table aria-labelledby="tableTitle" hoverRow>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Word</th>
-              <th>Definition</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => (
-                <tr key={index}>
-                  <td>{row.category}</td>
-                  <td>{row.word}</td>
-                  <td>{row.definition}</td>
-                </tr>
-              ))}
-          </tbody>
-        </Table>
-      </Sheet>
-      <Box
+        aria-label="Pricing plan"
+        defaultValue={0}
         sx={{
+          width: "100%",
           display: "flex",
-          alignItems: "center",
-          gap: 2,
-          justifyContent: "flex-end",
+          flexDirection: "column",
+          alignItems: "stretch",
+          height: "100vh",
         }}
       >
-        <Typography textAlign="center" sx={{ minWidth: 80 }}>
-          {labelDisplayedRows({
-            from: rows.length === 0 ? 0 : page * rowsPerPage + 1,
-            to: getLabelDisplayedRowsTo(),
-            count: rows.length === -1 ? -1 : rows.length,
+        <TabList
+          disableUnderline
+          tabFlex={1}
+          sx={{
+            [`& .${tabClasses.root}`]: {
+              fontSize: "sm",
+              fontWeight: "lg",
+              [`&[aria-selected="true"]`]: {
+                color: "primary.500",
+                bgcolor: "background.surface",
+              },
+              [`&.${tabClasses.focusVisible}`]: {
+                outlineOffset: "-4px",
+              },
+            },
+          }}
+        >
+          {/* <Tab disableIndicator variant="soft" sx={{ flexGrow: 1 }}>
+            Community
+          </Tab> */}
+          {langs.map((lang) => {
+            return (
+              <Tab disableIndicator variant="soft" sx={{ flexGrow: 1 }}>
+                {lang}
+              </Tab>
+            );
           })}
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton
-            size="sm"
-            color="neutral"
-            variant="outlined"
-            disabled={page === 0}
-            onClick={() => handleChangePage(page - 1)}
-            sx={{ bgcolor: "background.surface" }}
+        </TabList>
+        {langs.map((lang, index) => {
+          return (
+            <TabPanel value={index}>
+              <LangTablePage lang={lang} />
+            </TabPanel>
+          );
+        })}
+        {/* <TabPanel value={0}>
+          <Typography level="inherit">
+            Get started with the industry-standard React UI library,
+            MIT-licensed.
+          </Typography>
+          <Typography
+            textColor="success.400"
+            fontSize="xl3"
+            fontWeight="xl"
+            mt={1}
           >
-            <KeyboardArrowLeftIcon />
-          </IconButton>
-          <IconButton
-            size="sm"
-            color="neutral"
-            variant="outlined"
-            disabled={
-              rows.length !== -1
-                ? page >= Math.ceil(rows.length / rowsPerPage) - 1
-                : false
-            }
-            onClick={() => handleChangePage(page + 1)}
-            sx={{ bgcolor: "background.surface" }}
+            $0{" "}
+            <Typography
+              fontSize="sm"
+              textColor="text.secondary"
+              fontWeight="md"
+            >
+              － Free forever
+            </Typography>
+          </Typography>
+        </TabPanel>
+        <TabPanel value={1}>
+          <Typography level="inherit">
+            Best for professional developers building enterprise or data-rich
+            applications.
+          </Typography>
+          <Typography
+            textColor="primary.400"
+            fontSize="xl3"
+            fontWeight="xl"
+            mt={1}
           >
-            <KeyboardArrowRightIcon />
-          </IconButton>
-        </Box>
-      </Box>
-      <Button
-        color="success"
-        variant="contained"
-        onClick={() => {
-          toggleModal();
-        }}
-      >
-        Add Words
-      </Button>
-      <MainModal
-        open={open}
-        onClose={toggleModal}
-        type={"addWords"}
-        data={""}
-      />
+            $15{" "}
+            <Typography
+              fontSize="sm"
+              textColor="text.secondary"
+              fontWeight="md"
+            >
+              / dev / month
+            </Typography>
+          </Typography>
+        </TabPanel>
+        <TabPanel value={2}>
+          <Typography level="inherit">
+            The most advanced features for data-rich applications, as well as
+            the highest priority for support.
+          </Typography>
+          <Typography
+            textColor="primary.400"
+            fontSize="xl3"
+            fontWeight="xl"
+            mt={1}
+          >
+            <Typography
+              fontSize="xl"
+              borderRadius="sm"
+              px={0.5}
+              mr={0.5}
+              sx={(theme) => ({
+                ...theme.variants.soft.danger,
+                color: "danger.400",
+                verticalAlign: "text-top",
+                textDecoration: "line-through",
+              })}
+            >
+              $49
+            </Typography>
+            $37*{" "}
+            <Typography
+              fontSize="sm"
+              textColor="text.secondary"
+              fontWeight="md"
+            >
+              / dev / month
+            </Typography>
+          </Typography>
+        </TabPanel> */}
+      </Tabs>
     </div>
   );
 }

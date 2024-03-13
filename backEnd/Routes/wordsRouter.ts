@@ -23,10 +23,18 @@ const router = express.Router();
 // );
 
 router.get(
-  "/getMyWords/:id",
+  "/getMyWords/:id/:lang",
   async (request: Request, response: Response, next: NextFunction) => {
     const id = +request.params.id;
-    response.status(200).json(await wordsLogic.getMyWords(id));
+    const lang = request.params.lang;
+    response.status(200).json(await wordsLogic.getMyWords(id, lang));
+  }
+);
+router.get(
+  "/getLangListById/:id",
+  async (request: Request, response: Response, next: NextFunction) => {
+    const id = +request.params.id;
+    response.status(200).json(await wordsLogic.getLangListById(id));
   }
 );
 router.post(
@@ -38,14 +46,14 @@ router.post(
     response.status(200).json(await wordsLogic.uploadWords(id, words, lang));
   }
 );
-// router.get(
-//   "/checkPhoneNumber",
-//   async (request: Request, response: Response, next: NextFunction) => {
-//     const num = request.query.numberToCheck;
-//     if (typeof num === "string") {
-//       response.status(200).json(await checkNum(+num));
-//     }
-//   }
-// );
+
+router.delete(
+  "/deleteWord/:id",
+  async (request: Request, response: Response, next: NextFunction) => {
+    const id = +request.params.id;
+
+    response.status(200).json(await wordsLogic.deleteWord(+id));
+  }
+);
 
 export default router;
