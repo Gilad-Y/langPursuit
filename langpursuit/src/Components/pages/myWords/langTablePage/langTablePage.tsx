@@ -37,7 +37,6 @@ function LangTablePage(props: props): JSX.Element {
       )
       .then((res: any) => {
         setRows(res.data); // Update the state with fetched data
-        console.log(res.data);
       });
   }, [ref]);
   const handleChangePage = (newPage: number) => {
@@ -77,6 +76,10 @@ function LangTablePage(props: props): JSX.Element {
         setRefresh(!ref);
       });
   };
+  const hearWord = (word: string) => {
+    // const value = new SpeechSynthesisUtterance("こんにちは");
+    // window.speechSynthesis.speak(value);
+  };
   return (
     <div className="langTablePage">
       {rows.length > 0 ? (
@@ -98,7 +101,12 @@ function LangTablePage(props: props): JSX.Element {
                 {rows
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
-                    <tr key={index}>
+                    <tr
+                      key={index}
+                      onClick={() => {
+                        hearWord(row.word);
+                      }}
+                    >
                       <td>{row.category}</td>
                       <td>{row.word}</td>
                       <td>{row.definition}</td>

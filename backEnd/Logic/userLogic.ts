@@ -89,7 +89,24 @@ const logUser = async (email: string, password: string) => {
     throw new Error("An error occurred while logging in");
   }
 };
+const register = async (user: UserModel) => {
+  try {
+    const SQLcmd = `
+      INSERT INTO usersTable
+      (firstName, lastName, email, phone, password, type,lang) 
+      VALUES ('${user.firstName}', '${user.lastName}', '${user.email}', '${
+      user.phone
+    }', '${user._userPass}', '${user.type ? 1 : 0}','${user.lang}');
 
+    `;
+    const data = await dal_mysql.execute(SQLcmd);
+    user.id = data.insertId;
+    return [user];
+  } catch (error) {
+    console.error("Error while executing SQL query:", error);
+    throw new Error("An error occurred while logging in");
+  }
+};
 // const addCard = async (card: any) => {
 //   const SQLcmd = `
 // INSERT INTO paymentTable ( coachId, traineeId,
@@ -224,6 +241,7 @@ const logUser = async (email: string, password: string) => {
 export {
   // getAll,
   logUser,
+  register,
   // executeCard,
   // checkNum,
   // addUser,

@@ -9,20 +9,26 @@ import Settings from "../../pages/settings/settings";
 import Practice from "../../pages/Practice/Practice";
 import MyWords from "../../pages/myWords/myWords";
 import Info from "../../pages/info/info";
+import Register from "../../pages/register/register";
+import AddAccount from "../../pages/register/addAccount/addAccount";
 
 function MainRoute(): JSX.Element {
   const nav = useNavigate();
   useEffect(() => {
-    !store.getState().users.user[0]?.id && nav("/login");
+    const link = window.location.pathname;
+    if (link != "/addAccount") {
+      !store.getState().users.user[0]?.id && nav("/login");
+    }
   }, [nav]);
-  store.subscribe(() => {
-    !store.getState().users.user[0]?.id && nav("/login");
-  });
+  // store.subscribe(() => {
+  //   !store.getState().users.user[0]?.id && nav("/login");
+  // });
   return (
     <div className="mainRoute">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/practice" element={<Practice />} />
+        <Route path="/addAccount" element={<AddAccount />} />
         <Route path="/myWords/:id" element={<MyWords />} />
         <Route path="/info" element={<Info />} />
         <Route path="/settings/:id" element={<Settings />} />

@@ -6,6 +6,7 @@ export class UserModel {
   public phone: string;
   private userPass: string;
   public type: string;
+  public lang: [];
 
   public belonging: number;
 
@@ -17,7 +18,8 @@ export class UserModel {
     phone: string,
     userPass: string,
     type: string,
-    belonging: number
+    belonging: number,
+    lang: []
   ) {
     this.id = id;
     this.firstName = firstName;
@@ -27,6 +29,7 @@ export class UserModel {
     this.userPass = userPass;
     this.type = type;
     this.belonging = belonging;
+    this.lang = lang;
   }
 
   // Getter for userPassword

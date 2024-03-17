@@ -38,10 +38,7 @@ function LogIn(): JSX.Element {
         store.dispatch(logInUser(res.data));
         nav("/");
       })
-      .catch((err: any) => {
-        console.log(err);
-        console.log("not correct");
-      })
+      .catch((err: any) => {})
       .finally(() => {
         document.body.style.cursor = "default";
       });
@@ -158,8 +155,8 @@ function LogIn(): JSX.Element {
                       </Link>
                     </Grid>
                     <Grid item>
-                      <Link href="#" variant="body2">
-                        {"אין לי משתמש"}
+                      <Link href="/addAccount" variant="body2">
+                        create new account
                       </Link>
                     </Grid>
                   </Grid>

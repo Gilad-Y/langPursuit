@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { logUser } from "../Logic/userLogic";
+import { logUser, register } from "../Logic/userLogic";
 
 const router = express.Router();
 // router.get(
@@ -31,6 +31,17 @@ router.post(
     data.length > 0
       ? response.status(200).json(data)
       : response.status(403).json(data);
+  }
+);
+router.post(
+  "/register",
+  async (request: Request, response: Response, next: NextFunction) => {
+    const user = request.body;
+    const data = await register(user);
+    response.status(201).json(data);
+    // data.length > 0
+    //   ? response.status(200).json(data)
+    //   : response.status(403).json(data);
   }
 );
 // router.get(
