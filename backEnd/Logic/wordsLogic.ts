@@ -10,6 +10,7 @@ const getMyWords = async (id: number, lang: string) => {
       WHERE userId = ${id} AND lang = '${lang}'
     `;
   const data = await dal_mysql.execute(SQLcmd);
+// console.log(data)
   return data;
 };
 const uploadWords = async (id: number, words: wordsModel[], lang: string) => {

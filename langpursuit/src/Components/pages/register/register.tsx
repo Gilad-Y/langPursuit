@@ -24,6 +24,8 @@ interface props {
 function Register(props: props): JSX.Element {
   const nav = useNavigate();
   const [alert, setAlert] = React.useState<any>(undefined);
+  const[emailFree,setEmail]=React.useState<boolean|undefined>(undefined)
+  const[phoneFree,setPhone]=React.useState<boolean|undefined>(undefined)
   const {
     handleSubmit,
     register,
@@ -38,7 +40,7 @@ function Register(props: props): JSX.Element {
       }, 5000);
     }
   };
-  const createNewUser = (data: UserModel | any) => {
+  const checkinfo = (data: UserModel | any) => {
     const password = data._userPass;
     const confirmPassword = data.confirmPassword;
     if (password.length < 6) {
@@ -53,32 +55,33 @@ function Register(props: props): JSX.Element {
       popAlert({ content: "Passwords do not match.", color: "warning" });
       return;
     }
-    if (password === confirmPassword && password.length >= 6) {
-      props.sendUserInfo({
+     const queryParams = `?phone=${+data.phone}&email=${encodeURIComponent(data.email)}`;
+  axios
+    .get(`http://localhost:4000/api/v1/user/checkPhoneNumberAndEmail${queryParams}`)
+    .then((res) => {
+      console.log(res.data)
+      setEmail(res.data.email)
+      setPhone(res.data.phone)
+      if (password === confirmPassword && password.length >= 6 && res.data.phone && res.data.email) {
+        createNewUser(data)
+      }
+    })
+    .catch((error) => {
+      // Handle errors
+    });
+  };
+  const createNewUser=(data:UserModel)=>{
+ props.sendUserInfo({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
         _userPass: data._userPass,
       });
+      
       props.addStep();
-      //   popAlert({ content: "Crating a user!", color: "success" });
-      //   document.body.style.cursor = "wait";
-      //   axios
-      //     .post("http://localhost:4000/api/v1/user/register", data)
-      //     .then((res) => {
-      //       store.dispatch(logInUser(res.data));
-      //       nav("/");
-      //     })
-      //     .catch((err: any) => {})
-      //     .finally(() => {
-      //       document.body.style.cursor = "default";
-      //     });
-    }
-  };
-  //   React.useEffect(() => {
-  //     store.getState().users.user[0]?.id && nav("/");
-  //   }, [store.getState().users.user[0]?.id]);
+  }
+
   return (
     <div className="register">
       <Container component="main" maxWidth="xs">
@@ -103,7 +106,7 @@ function Register(props: props): JSX.Element {
             </Alert>
           )}
           <br />
-          <form onSubmit={handleSubmit(createNewUser)} noValidate>
+          <form onSubmit={handleSubmit(checkinfo)} noValidate>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -141,7 +144,7 @@ function Register(props: props): JSX.Element {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
-                  error={!!errors.email}
+                  error={(emailFree!==undefined)&&(!emailFree)||!!errors.email}
                   helperText={errors.email ? "Required" : ""}
                 />
               </Grid>
@@ -154,7 +157,7 @@ function Register(props: props): JSX.Element {
                   label="Phone number"
                   name="phone"
                   autoComplete="tel"
-                  error={!!errors.phone}
+                  error={(phoneFree!==undefined)&&(!phoneFree)||!!errors.phone}
                   helperText={errors.phone ? "Required" : ""}
                 />
               </Grid>

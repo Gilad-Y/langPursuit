@@ -65,18 +65,16 @@ function AddWordFromFile(props: Props): JSX.Element {
       .get(
         `http://localhost:4000/api/v1/words/getMyWords/${
           store.getState().users.user[0].id
-        }`
+        }/${props.data}`
       )
       .then((res: any) => {
         const myWords = res.data;
+// console.log(myWords)
         // console.log(myWords);
         // Check if any word from wordsFile already exists in myWords
-        const nonExistingWords = wordsFile?.filter((wordFromFile: any) => {
-          return myWords.some(
-            (word: any) => word.word !== wordFromFile.word
-            // console.log(detectLanguage())
-          );
-        });
+       const nonExistingWords = wordsFile?.filter((wordFromFile: any) => {
+  return !myWords.some((word: any) => word.word === wordFromFile.word);
+});
 
         // Log the existing words found
         // console.log("added:", nonExistingWords?.length);
@@ -85,7 +83,9 @@ function AddWordFromFile(props: Props): JSX.Element {
             store.getState().users.user[0].id
           }/${props.data}`,
           nonExistingWords
-        );
+        ).then(()=>{
+          props.onClose()
+        })
       });
   };
   return (

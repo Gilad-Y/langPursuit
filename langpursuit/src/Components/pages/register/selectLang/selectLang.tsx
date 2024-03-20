@@ -3,65 +3,74 @@ import * as React from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import ListItemDecorator from "@mui/joy/ListItemDecorator";
-import ListDivider from "@mui/joy/ListDivider";
-import Select, { SelectOption } from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
-import { Avatar, Chip } from "@mui/joy";
+import Autocomplete from '@mui/material/Autocomplete';
 import axios from "axios";
-
+import { Alert } from "@mui/material";
 interface props {
   addStep: () => void;
-  sendLangInfo: (langs: String[]) => void;
+  sendLangInfo: (langs: string[]) => void;
   removeToStep: () => void;
 }
 
 function SelectLang(props: props): JSX.Element {
-  const [options, setOptions] = React.useState<any[]>([]);
-  const [value, setValue] = React.useState<string[]>([]);
-  const [flags, setFlags] = React.useState<string[]>([]);
-
+  const [languages, setLanguages] = React.useState<any[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = React.useState<string[]>([]);
+const [alert, setAlert] = React.useState<any>(undefined);
+const popAlert = (alertToAdd: any) => {
+    if (alert == undefined) {
+      setAlert(alertToAdd);
+      setTimeout(() => {
+        popAlert(undefined);
+      }, 5000);
+    }
+  };
   React.useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all").then((res: any) => {
-      // Sort the array based on the label (name)
-      const sortedData = res.data.sort((a: any, b: any) => {
-        if (a.name.common < b.name.common) return -1;
-        if (a.name.common > b.name.common) return 1;
-        return 0;
+      const sortedLanguages: any[] = [];
+      res.data.forEach((country: any) => {
+        if (country.languages) {
+  Object.entries(country.languages).forEach(([key, value]: [any, any]) => {
+    // Exclude English (assuming "English" is the language to be excluded)
+    if (value !== "English") {
+      // Check if the language already exists in the sortedLanguages array
+      const existingLanguage = sortedLanguages.find(lang => lang.value === value);
+      if (!existingLanguage) {
+        sortedLanguages.push({
+          label: value,
+          value: value,
+          flag: country.flags.png
+        });
+      }
+    }
+  });
+}
+
       });
 
-      // Map over the sorted array to create the options
-      const mappedOptions = sortedData.map((item: any) => ({
-        label: item.name.common,
-        value: item.languages,
-        src: item.flags.png,
-      }));
+      // Sort the languages alphabetically by label
+      sortedLanguages.sort((a, b) => a.label.localeCompare(b.label));
 
-      // Set the options in the state
-      setOptions(mappedOptions);
+      setLanguages(sortedLanguages);
     });
   }, []);
-  const sendLanguages = () => {
-    props.sendLangInfo(value);
-    props.addStep();
-  };
-  const handleSelectChange = (event: any, newValue: any) => {
-    setValue(newValue);
-    // Extract flag URLs from selected options and set them in the state
-    const selectedFlags = newValue.map(
-      (val: string) => options.find((opt) => opt.label === val)?.src || ""
-    );
-    setFlags(selectedFlags);
-  };
 
-  // Create a new variable and assign Select component with 'any' type
-  const SelectComponent: any = Select;
+  const sendLanguages = () => {
+    if(selectedLanguages.length>0){
+    var langToUser:string[]=[]
+    selectedLanguages.map((item:any)=>{
+      langToUser.push(item.value)
+    })
+     props.sendLangInfo(langToUser)
+    }else{
+popAlert({content:"you must pick at least one language",
+color:"warning"
+})
+    }
+  };
 
   return (
     <div className="selectLang">
@@ -75,71 +84,43 @@ function SelectLang(props: props): JSX.Element {
             alignItems: "center",
           }}
         >
+          {alert !== undefined && (
+            <Alert variant="filled" color={alert.color}>
+              {alert.content}
+            </Alert>
+          )}
           <Typography component="h1" variant="h5">
-            choose languages from the list
+            Choose languages from the list
           </Typography>
           <br />
           <Grid container spacing={2}>
-            {/* Use the newly created SelectComponent */}
-            <SelectComponent
-              component="div" // Set the component prop to "div"
-              defaultValue={["1"]}
-              slotProps={{
-                listbox: {
-                  sx: {
-                    "--ListItemDecorator-size": "44px",
-                  },
-                },
-              }}
-              sx={{
-                "--ListItemDecorator-size": "44px",
-                minWidth: 240,
-              }}
-              renderValue={(options: SelectOption<string>[] | null) =>
-                options ? options.map((opt) => opt.label).join(", ") : ""
-              }
+            <Autocomplete
+            fullWidth
               multiple
-              onChange={handleSelectChange}
-              value={value}
-              // Use the renderTags property
-              renderTags={(value: SelectOption<string>[], getTagProps: any) =>
-                value.map((option: SelectOption<string>, index: number) => (
-                  <Chip
-                    key={index}
-                    label={option.label}
-                    {...getTagProps({ index })}
-                    sx={{ m: 0.5 }}
-                  />
-                ))
-              }
-            >
-              {options.map((option, index) => (
-                <React.Fragment key={option.label}>
-                  {index !== 0 ? (
-                    <ListDivider role="none" inset="startContent" />
-                  ) : null}
-                  <Option value={option.value} label={option.label}>
-                    <ListItemDecorator>
-                      <Avatar size="sm" src={option.src} />
-                    </ListItemDecorator>
-                    {option.label}
-                  </Option>
-                </React.Fragment>
-              ))}
-            </SelectComponent>
+              id="tags-standard"
+              options={languages}
+              value={selectedLanguages}
+              onChange={(event, newValue) => {
+                setSelectedLanguages(newValue);
+                
+              }}
+              renderInput={(params: any) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  label="pick languages"
+                  placeholder="pick languages"
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <img src={option.flag} alt={option.label}  width={"30px"}/>
+                  {option.label}
+                </li>
+              )}
+            />
           </Grid>
           <br />
-          <Typography component="h2" variant="h6">
-            Selected Flags:
-          </Typography>
-          <Grid container spacing={2}>
-            {flags.map((flag, index) => (
-              <Grid item key={index}>
-                <img alt="Flag" src={flag} />
-              </Grid>
-            ))}
-            <br />
-          </Grid>
           <Button
             fullWidth
             variant="contained"
@@ -147,7 +128,7 @@ function SelectLang(props: props): JSX.Element {
               sendLanguages();
             }}
           >
-            done
+            Done
           </Button>
         </Box>
       </Container>

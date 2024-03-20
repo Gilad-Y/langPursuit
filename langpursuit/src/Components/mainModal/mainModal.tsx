@@ -7,6 +7,7 @@ import ModalDialog from "@mui/joy/ModalDialog";
 import AddWordForm from "./addWords/addWordForm/addWordForm";
 import AddWordFromFile from "./addWords/addWordFromFile/addWordFromFile";
 import { Divider } from "@mui/material";
+import EditWord from "./editWord/editWord";
 
 interface MainModalProps {
   open: boolean;
@@ -44,6 +45,8 @@ function MainModal(props: MainModalProps): JSX.Element {
               <AddWordFromFile data={props.data} onClose={props.onClose} />
             </div>
           )}
+          {props.type === "editWord" && 
+              <EditWord data={props.data} onClose={props.onClose} />}
         </ModalDialog>
       </Modal>
     </>

@@ -96,7 +96,7 @@ const register = async (user: UserModel) => {
       (firstName, lastName, email, phone, password, type,lang) 
       VALUES ('${user.firstName}', '${user.lastName}', '${user.email}', '${
       user.phone
-    }', '${user._userPass}', '${user.type ? 1 : 0}','${user.lang}');
+    }', '${user._userPass}', '${user.type ? 1 : 0}','${user.lang.join(",")}');
 
     `;
     const data = await dal_mysql.execute(SQLcmd);
@@ -106,6 +106,19 @@ const register = async (user: UserModel) => {
     console.error("Error while executing SQL query:", error);
     throw new Error("An error occurred while logging in");
   }
+};
+const checkNumAndEmail = async (phone: number | undefined,email:string) => {
+  const SQLphone = `
+  SELECT COUNT(*) AS 'phone' from usersTable WHERE phone='0${phone}'
+  `;
+  const SQLemail = `
+  SELECT COUNT(*) AS 'email' from usersTable WHERE email='${email}'
+  `;
+  const phoneData = await dal_mysql.execute(SQLphone);
+  const emailData = await dal_mysql.execute(SQLemail);
+  return ({phone:phoneData[0].phone==0,
+          email:emailData[0].email==0
+  });
 };
 // const addCard = async (card: any) => {
 //   const SQLcmd = `
@@ -242,6 +255,7 @@ export {
   // getAll,
   logUser,
   register,
+  checkNumAndEmail,
   // executeCard,
   // checkNum,
   // addUser,

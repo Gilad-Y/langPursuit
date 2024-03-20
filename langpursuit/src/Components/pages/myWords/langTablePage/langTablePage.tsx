@@ -23,13 +23,19 @@ function LangTablePage(props: props): JSX.Element {
   const params = useParams();
   const [rows, setRows] = useState<wordsModel[]>([]);
   const [open, setOpen] = useState<boolean>(false);
+  const [openEdit, setEdit] = useState<boolean>(false);
   const [ref, setRefresh] = useState<boolean>(false);
+  const [wordToEdit,setWord]=useState<wordsModel>()
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const toggleModal = () => {
     setOpen((prev) => !prev);
+    setRefresh(!ref)
   };
-
+  const toggleEdit = () => {
+    setEdit((prev) => !prev);
+    setRefresh(!ref)
+  };
   useEffect(() => {
     axios
       .get(
@@ -66,8 +72,10 @@ function LangTablePage(props: props): JSX.Element {
       ? rows.length
       : Math.min(rows.length, (page + 1) * rowsPerPage);
   };
-  const editRow = (id: number) => {
-    console.log(id);
+  const editRow = (word: wordsModel) => {
+    toggleEdit()
+    console.log(word);
+    setWord(word)
   };
   const deleteRow = (id: number) => {
     axios
@@ -115,7 +123,7 @@ function LangTablePage(props: props): JSX.Element {
                         <IconButton onClick={() => deleteRow(row.id)}>
                           <DeleteIcon />
                         </IconButton>
-                        <IconButton onClick={() => editRow(row.id)}>
+                        <IconButton onClick={() => editRow(row)}>
                           <EditIcon />
                         </IconButton>
                       </td>
@@ -184,6 +192,12 @@ function LangTablePage(props: props): JSX.Element {
         onClose={toggleModal}
         type={"addWords"}
         data={props.lang}
+      />
+      <MainModal
+        open={openEdit}
+        onClose={toggleEdit}
+        type={"editWord"}
+        data={wordToEdit}
       />
     </div>
   );

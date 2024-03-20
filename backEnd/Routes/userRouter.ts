@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { logUser, register } from "../Logic/userLogic";
+import { checkNumAndEmail, logUser, register } from "../Logic/userLogic";
 
 const router = express.Router();
 // router.get(
@@ -37,6 +37,7 @@ router.post(
   "/register",
   async (request: Request, response: Response, next: NextFunction) => {
     const user = request.body;
+    console.log(user)
     const data = await register(user);
     response.status(201).json(data);
     // data.length > 0
@@ -44,14 +45,21 @@ router.post(
     //   : response.status(403).json(data);
   }
 );
-// router.get(
-//   "/checkPhoneNumber",
-//   async (request: Request, response: Response, next: NextFunction) => {
-//     const num = request.query.numberToCheck;
-//     if (typeof num === "string") {
-//       response.status(200).json(await checkNum(+num));
-//     }
-//   }
-// );
+router.get(
+  "/checkPhoneNumberAndEmail",
+  async (request: Request, response: Response, next: NextFunction) => {
+    const { phone, email } = request.query;
+    console.log(phone, email);
+    if (typeof phone === "string" && typeof email === "string") {
+      // Here you can perform your logic to check the phone number and email
+      // and respond accordingly
+      response.status(200).json(await checkNumAndEmail(+phone,email));
+    } else {
+      response.status(400).json({ error: "Invalid parameters" });
+    }
+  }
+);
+
+
 
 export default router;

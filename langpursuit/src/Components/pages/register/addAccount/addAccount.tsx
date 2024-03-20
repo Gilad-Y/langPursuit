@@ -8,9 +8,15 @@ import { Check } from "@mui/icons-material";
 import Register from "../register";
 import { UserModel } from "../../../../models/userModel";
 import SelectLang from "../selectLang/selectLang";
+import { logInUser } from "../../../../redux/usersReducer";
+import store from "../../../../redux/store";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Redirecting from "../redirecting/redirecting";
 function AddAccount(): JSX.Element {
   const [activeStep, setStep] = useState<number>(1);
   const [user, setUser] = useState<UserModel>();
+  const nav=useNavigate()
   const addToStep = () => {
     setStep(activeStep + 1);
   };
@@ -18,11 +24,41 @@ function AddAccount(): JSX.Element {
     setStep(activeStep - 1);
   };
   const getUserInfo = (data: UserModel) => {
-    console.log(data);
+    setUser(data)
   };
-  const getLangInfo = (lang: String[]) => {
-    console.log(lang);
-  };
+const getLangInfo = (lang:string[]) => {
+  if (user) {
+    // const updatedUser = new UserModel(
+    //   user.id,
+    //   user.firstName,
+    //   user.lastName,
+    //   user.email,
+    //   user.phone,
+    //   user._userPass, // Assuming userPass is accessible or set to default value
+    //   user.type,
+    //   lang // Update lang property with new value
+    // );
+    // setUser(updatedUser);
+    addToStep();
+  }
+  addUser({...user,lang})
+};
+
+  const addUser=(user:any)=>{
+    user&&
+    axios
+          .post("http://localhost:4000/api/v1/user/register", user)
+          .then((res) => {
+            console.log(res.data)
+            store.dispatch(logInUser(res.data));
+            nav("/");
+          })
+          .catch((err: any) => {})
+          .finally(() => {
+            document.body.style.cursor = "default";
+          });
+    
+  }
   return (
     <div className="addAccount">
       <Container component="main" maxWidth="xs">
@@ -79,6 +115,8 @@ function AddAccount(): JSX.Element {
               sendLangInfo={getLangInfo}
             />
           )}
+          {activeStep == 3 && (
+            <Redirecting/>          )}
         </Box>
       </Container>
     </div>
