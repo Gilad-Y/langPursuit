@@ -10,7 +10,7 @@ const getMyWords = async (id: number, lang: string) => {
       WHERE userId = ${id} AND lang = '${lang}'
     `;
   const data = await dal_mysql.execute(SQLcmd);
-// console.log(data)
+  // console.log(data)
   return data;
 };
 const uploadWords = async (id: number, words: wordsModel[], lang: string) => {
@@ -43,5 +43,14 @@ const deleteWord = async (id: number) => {
   const data = await dal_mysql.execute(SQLcmd);
   return data;
 };
-//DELETE FROM `langPursuit`.`wordsTable` WHERE (`id` = '57');
-export { getMyWords, uploadWords, getLangListById, deleteWord };
+const editWord = async (word: wordsModel) => {
+  const SQLcmd = `
+    UPDATE wordsTable SET 
+    word = '${word.word}', definition = '${word.definition}',category = '${word.category}' 
+    WHERE (id = ${word.id});
+    `;
+  const data = await dal_mysql.execute(SQLcmd);
+  return data;
+};
+///UPDATE `langPursuit`.`wordsTable` SET `word` = 'dddd', `definition` = 'ddddd', `category` = 'fgfg' WHERE (`id` = '269');
+export { getMyWords, uploadWords, editWord, getLangListById, deleteWord };

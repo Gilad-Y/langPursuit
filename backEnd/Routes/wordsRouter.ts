@@ -46,6 +46,13 @@ router.post(
     response.status(200).json(await wordsLogic.uploadWords(id, words, lang));
   }
 );
+router.put(
+  "/editWord",
+  async (request: Request, response: Response, next: NextFunction) => {
+    const word = request.body;
+    response.status(200).json(await wordsLogic.editWord(word));
+  }
+);
 
 router.delete(
   "/deleteWord/:id",
