@@ -35,10 +35,10 @@ const getLangListById = async (id: number) => {
   const data = await dal_mysql.execute(SQLcmd);
   return data;
 };
-const deleteWord = async (id: number) => {
+const deleteWord = async (id: string[]) => {
   const SQLcmd = `
      DELETE FROM wordsTable
-      WHERE (id = ${id})
+      WHERE id IN (${id.join(",")})
     `;
   const data = await dal_mysql.execute(SQLcmd);
   return data;
@@ -52,5 +52,14 @@ const editWord = async (word: wordsModel) => {
   const data = await dal_mysql.execute(SQLcmd);
   return data;
 };
-///UPDATE `langPursuit`.`wordsTable` SET `word` = 'dddd', `definition` = 'ddddd', `category` = 'fgfg' WHERE (`id` = '269');
-export { getMyWords, uploadWords, editWord, getLangListById, deleteWord };
+const getPractice = async (words: wordsModel[]) => {
+  return words;
+};
+export {
+  getMyWords,
+  uploadWords,
+  editWord,
+  getLangListById,
+  deleteWord,
+  getPractice,
+};

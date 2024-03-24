@@ -15,44 +15,49 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import React from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Checkbox from "@mui/joy/Checkbox";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+
 interface props {
-  //   id: number;
   lang: string;
 }
+
 function LangTablePage(props: props): JSX.Element {
   const params = useParams();
   const [rows, setRows] = useState<wordsModel[]>([]);
+  const [selected, setSelected] = React.useState<any[]>([]); // State for selected rows
   const [open, setOpen] = useState<boolean>(false);
   const [openEdit, setEdit] = useState<boolean>(false);
   const [ref, setRefresh] = useState<boolean>(false);
-  const [wordToEdit,setWord]=useState<wordsModel>()
+  const [wordToEdit, setWord] = useState<wordsModel>();
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
   const toggleModal = () => {
     setOpen((prev) => !prev);
-    setRefresh(!ref)
+    setRefresh(!ref);
   };
+
   const toggleEdit = () => {
     setEdit((prev) => !prev);
-    setRefresh(!ref)
+    setRefresh(!ref);
   };
+
   useEffect(() => {
     axios
       .get(
         `http://localhost:4000/api/v1/words/getMyWords/${params.id}/${props.lang}`
       )
       .then((res: any) => {
-        setRows(res.data); // Update the state with fetched data
+        setRows(res.data);
       });
   }, [ref]);
+
   const handleChangePage = (newPage: number) => {
     setPage(newPage);
   };
-  // const handleChangeRowsPerPage = (event: any, newValue: number | null) => {
-  //   setRowsPerPage(parseInt(newValue!.toString(), 10));
-  //   setPage(0);
-  // };
-  function labelDisplayedRows({
+
+  const labelDisplayedRows = ({
     from,
     to,
     count,
@@ -60,9 +65,9 @@ function LangTablePage(props: props): JSX.Element {
     from: number;
     to: number;
     count: number;
-  }): string {
+  }): string => {
     return `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`;
-  }
+  };
 
   const getLabelDisplayedRowsTo = () => {
     if (rows.length === -1) {
@@ -72,22 +77,62 @@ function LangTablePage(props: props): JSX.Element {
       ? rows.length
       : Math.min(rows.length, (page + 1) * rowsPerPage);
   };
+
   const editRow = (word: wordsModel) => {
-    toggleEdit()
-    console.log(word);
-    setWord(word)
+    toggleEdit();
+    setWord(word);
   };
-  const deleteRow = (id: number) => {
+
+  const deleteRow = (id: number | any[]) => {
     axios
       .delete(`http://localhost:4000/api/v1/words/deleteWord/${id}`)
       .then((res) => {
         setRefresh(!ref);
       });
   };
+
   const hearWord = (word: string) => {
-    // const value = new SpeechSynthesisUtterance("こんにちは");
-    // window.speechSynthesis.speak(value);
+    // Do something with the word
   };
+  const sendWordsForPractice = () => {
+    // Convert string IDs to numbers
+    const selectedIds = selected.map((id) => parseInt(id, 10));
+
+    // Filter the rows array based on selectedIds
+    const filteredArray = rows.filter((item) => selectedIds.includes(item.id));
+
+    axios
+      .post(`http://localhost:4000/api/v1/words/getPractice`, filteredArray)
+      .then((res: any) => {
+        console.log({ words: res.data, level: 5, sentence: 5 });
+      })
+      .catch((err: any) => {
+        console.log(err);
+      });
+  };
+  const handleCheckboxClick = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    id: string
+  ) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected: string[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
+    }
+
+    setSelected(newSelected);
+  };
+
   return (
     <div className="langTablePage">
       {rows.length > 0 ? (
@@ -99,10 +144,52 @@ function LangTablePage(props: props): JSX.Element {
             <Table aria-labelledby="tableTitle" hoverRow>
               <thead>
                 <tr>
+                  <th>
+                    <Checkbox
+                      indeterminate={
+                        selected.length > 0 && selected.length < rows.length
+                      }
+                      checked={
+                        rows.length > 0 && selected.length === rows.length
+                      }
+                      onChange={() => {
+                        if (selected.length === rows.length) {
+                          setSelected([]);
+                        } else {
+                          const newSelected = rows.map((row) =>
+                            row.id.toString()
+                          );
+                          setSelected(newSelected);
+                        }
+                      }}
+                    />
+                  </th>
                   <th>Category</th>
                   <th>Word</th>
                   <th>Definition</th>
-                  <th></th>
+                  <th>
+                    {selected && (
+                      <>
+                        <Button
+                          color="error"
+                          onClick={() => {
+                            deleteRow(selected);
+                          }}
+                        >
+                          <DeleteIcon />
+                        </Button>
+                        <Button
+                          color="success"
+                          disabled={selected.length < 10}
+                          onClick={() => {
+                            sendWordsForPractice();
+                          }}
+                        >
+                          <EditNoteIcon />
+                        </Button>
+                      </>
+                    )}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -115,11 +202,18 @@ function LangTablePage(props: props): JSX.Element {
                         hearWord(row.word);
                       }}
                     >
+                      <td>
+                        <Checkbox
+                          checked={selected.indexOf(row.id.toString()) !== -1}
+                          onChange={(event) =>
+                            handleCheckboxClick(event, row.id.toString())
+                          }
+                        />
+                      </td>
                       <td>{row.category}</td>
                       <td>{row.word}</td>
                       <td>{row.definition}</td>
                       <td>
-                        {" "}
                         <IconButton onClick={() => deleteRow(row.id)}>
                           <DeleteIcon />
                         </IconButton>
@@ -176,7 +270,7 @@ function LangTablePage(props: props): JSX.Element {
           </Box>
         </>
       ) : (
-        <h1>it's a good time to add words</h1>
+        <h1>It's a good time to add words</h1>
       )}
       <Button
         color="success"
